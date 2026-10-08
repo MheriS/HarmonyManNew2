@@ -1,0 +1,50 @@
+{
+  "hermes-signal": {
+    "PostInvocation": [
+      {
+        "command": "\"//?/C:/Users/herib/AppData/Local/HERMES-IDE/helpers/hi.exe\" signal --agent antigravity --event PostInvocation",
+        "timeout": 5,
+        "type": "command"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "\"//?/C:/Users/herib/AppData/Local/HERMES-IDE/helpers/hi.exe\" signal --agent antigravity --event PostToolUse",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PreInvocation": [
+      {
+        "command": "\"//?/C:/Users/herib/AppData/Local/HERMES-IDE/helpers/hi.exe\" signal --agent antigravity --event PreInvocation",
+        "timeout": 5,
+        "type": "command"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "\"//?/C:/Users/herib/AppData/Local/HERMES-IDE/helpers/hi.exe\" signal --agent antigravity --event PreToolUse",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "\"//?/C:/Users/herib/AppData/Local/HERMES-IDE/helpers/hi.exe\" signal --agent antigravity --event Stop",
+        "timeout": 5,
+        "type": "command"
+      }
+    ],
+    "enabled": true
+  }
+}

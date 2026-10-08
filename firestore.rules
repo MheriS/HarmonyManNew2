@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net - Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Rule helper to prevent dangerous IDs
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    // Project document rules (carrying likes count)
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isValidId(projectId) 
+        && request.resource.data.keys().hasAll(['likes'])
+        && request.resource.data.likes is int;
+      allow update: if isValidId(projectId) 
+        && request.resource.data.likes is int
+        && (
+          request.resource.data.likes - resource.data.likes == 1 
+          || request.resource.data.likes - resource.data.likes == -1
+          || request.resource.data.likes == resource.data.likes
+        );
+    }
+
+    // Profile avatar rules
+    match /profile/{profileId} {
+      allow read, write: if true;
+    }
+    
+    // Fallback collection for profile avatar
+    match /portfolio_projects/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Subcollection rules for user comments
+    match /projects/{projectId}/comments/{commentId} {
+      allow read: if true;
+      allow create: if isValidId(projectId) && isValidId(commentId)
+        && request.resource.data.keys().hasAll(['senderName', 'text', 'createdAt'])
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() <= 100
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000;
+      allow update, delete: if false; 
+    }
+  }
+}

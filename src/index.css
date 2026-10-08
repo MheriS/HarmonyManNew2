@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Space Grotesk", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-chassis-bg: #0d0e12;
+  --color-chassis-surface: #14161d;
+  --color-chassis-card: #191c24;
+  --color-chassis-inset: #090a0d;
+  
+  --color-accent-amber: #f59e0b;
+  --color-accent-orange: #ff5722;
+  --color-accent-green: #22c55e;
+  --color-accent-cyan: #06b6d4;
+}
+
+@layer base {
+  * {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0b0c10;
+    color: #e2e8f0;
+    overflow-x: hidden;
+    letter-spacing: -0.015em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+
+  /* Custom industrial scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #090a0d;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #232733;
+    border-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #32384a;
+  }
+}
+
+/* --- HARDWARE CHASSIS ARCHITECTURE (TEENAGE ENGINEERING & RAMS ETHOS) --- */
+
+/* Main outer extruded hardware module */
+.chassis-box {
+  background: #13151b;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1rem;
+  box-shadow: 
+    0 16px 36px -10px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+/* Inset / sunken bay */
+.chassis-inset {
+  background: #090a0d;
+  border: 1px solid rgba(0, 0, 0, 0.9);
+  border-radius: 0.75rem;
+  box-shadow: 
+    inset 0 2px 5px rgba(0, 0, 0, 0.95),
+    inset 0 0 1px rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Tactile push keycap */
+.hardware-key {
+  position: relative;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 3px 0 #07080a, 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.hardware-key:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #07080a, 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* CRT / LCD screen effect */
+.crt-screen {
+  background: #060709;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.625rem;
+}
+
+.crt-screen::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 10;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Phosphor green LED */
+.led-green {
+  box-shadow: 0 0 8px #22c55e, 0 0 2px #4ade80;
+}
+
+/* Studio Amber LED */
+.led-amber {
+  box-shadow: 0 0 8px #f59e0b, 0 0 2px #fbbf24;
+}
+
+/* Orange Studio Accent */
+.led-orange {
+  box-shadow: 0 0 8px #ff5722, 0 0 2px #ff8a65;
+}
+
+/* Cyan Telemetry LED */
+.led-cyan {
+  box-shadow: 0 0 8px #06b6d4, 0 0 2px #22d3ee;
+}
+
+/* Technical Sub-Grid Texture */
+.tech-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Number display with tabular numbers */
+.num-tabular {
+  font-variant-numeric: tabular-nums;
+}
