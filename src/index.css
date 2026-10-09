@@ -1,10 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: "Space Grotesk", -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-mono: "Fira Code", ui-monospace, SFMono-Regular, monospace;
   
   --color-chassis-bg: #0d0e12;
   --color-chassis-surface: #14161d;
@@ -25,14 +25,19 @@
   body {
     font-family: var(--font-sans);
     background-color: #0b0c10;
-    color: #e2e8f0;
+    color: #cbd5e1; /* slate-300 — lebih soft dari e2e8f0 */
     overflow-x: hidden;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.008em; /* kurangi tight tracking */
+    line-height: 1.65; /* tambah breathing room */
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em; /* kurangi dari -0.03 agar tidak terlalu ketat */
+    line-height: 1.25;
   }
 
   /* Custom industrial scrollbars */
