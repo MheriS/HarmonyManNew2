@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Download, Github, Linkedin, Instagram, Camera, ShieldCheck, Terminal, Radio } from 'lucide-react';
+import { MapPin, Download, Github, Linkedin, Instagram, Camera, ShieldCheck, Terminal, Radio, Mail, RotateCcw, CheckCircle } from 'lucide-react';
 import { PERSONAL_INFO } from '../data';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import emailjs from '@emailjs/browser';
 
 export default function Sidebar() {
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -14,6 +15,11 @@ export default function Sidebar() {
   const [isUploading, setIsUploading] = useState(false);
   const [cloudError, setCloudError] = useState<string | null>(null);
   const [dbState, setDbState] = useState<'connecting' | 'connected' | 'error' | 'no-db'>('connecting');
+
+  // Forgot password states
+  const [showForgotView, setShowForgotView] = useState(false);
+  const [forgotStatus, setForgotStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [forgotError, setForgotError] = useState('');
 
   const [isVerified, setIsVerified] = useState(() => {
     try {
@@ -95,6 +101,7 @@ export default function Sidebar() {
       setShowPasscodeModal(false);
       setPasscode('');
       setPasscodeError('');
+      setShowForgotView(false);
       setTimeout(() => {
         fileInputRef.current?.click();
       }, 100);
@@ -102,6 +109,62 @@ export default function Sidebar() {
       setPasscodeError('Kunci otentikasi salah.');
       setPasscode('');
     }
+  };
+
+  const handleForgotPassword = async () => {
+    setForgotStatus('sending');
+    setForgotError('');
+
+    const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+      setForgotStatus('error');
+      setForgotError('EmailJS belum dikonfigurasi. Lihat panduan setup di konsol.');
+      console.warn(
+        '[FORGOT PASSWORD] EmailJS belum dikonfigurasi.\n' +
+        'Tambahkan ke file .env:\n' +
+        '  VITE_EMAILJS_SERVICE_ID=service_xxxxxxx\n' +
+        '  VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx\n' +
+        '  VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx\n' +
+        'Daftar gratis di https://www.emailjs.com'
+      );
+      return;
+    }
+
+    try {
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          to_email:   'heribangkal21@gmail.com',
+          to_name:    'Heri Admin',
+          from_name:  'MHS Portfolio System',
+          subject:    'Reset Passcode Admin — Permintaan Baru',
+          message:
+            'Seseorang (kemungkinan kamu sendiri) baru saja meminta reset passcode admin di portfolio kamu.\n\n' +
+            'Untuk mengubah passcode, update variabel VITE_ADMIN_PASSCODE di file .env atau di panel deployment kamu.\n\n' +
+            'Jika bukan kamu yang meminta, abaikan email ini.',
+          time: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+        },
+        PUBLIC_KEY
+      );
+      setForgotStatus('sent');
+    } catch (err: any) {
+      setForgotStatus('error');
+      setForgotError('Gagal mengirim email. Periksa konfigurasi EmailJS.');
+      console.error('[EmailJS error]', err);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowPasscodeModal(false);
+    setPasscode('');
+    setPasscodeError('');
+    setShowForgotView(false);
+    setForgotStatus('idle');
+    setForgotError('');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -386,57 +449,168 @@ export default function Sidebar() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="w-full max-w-sm chassis-box p-6 border-amber-500/30"
             >
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
+              <AnimatePresence mode="wait">
+                {!showForgotView ? (
+                  /* --- MAIN PASSCODE VIEW --- */
+                  <motion.div
+                    key="passcode-view"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col items-center text-center gap-3"
+                  >
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
 
-                <div className="flex flex-col gap-1">
-                  <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
-                    OTENTIKASI AKSES ADMIN
-                  </h3>
-                  <p className="font-mono text-[10px] text-zinc-400">
-                    Masukkan passcode pemilik unit untuk mengunggah foto profil.
-                  </p>
-                </div>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+                        OTENTIKASI AKSES ADMIN
+                      </h3>
+                      <p className="font-mono text-[10px] text-zinc-400">
+                        Masukkan passcode pemilik unit untuk mengunggah foto profil.
+                      </p>
+                    </div>
 
-                <form onSubmit={handleVerifyPasscode} className="w-full flex flex-col gap-3 mt-1">
-                  <input
-                    type="password"
-                    value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="PASSCODE"
-                    autoFocus
-                    className="w-full chassis-inset px-4 py-2.5 text-center text-amber-400 font-mono text-sm tracking-widest focus:outline-none focus:border-amber-500/50"
-                  />
+                    <form onSubmit={handleVerifyPasscode} className="w-full flex flex-col gap-3 mt-1">
+                      <input
+                        type="password"
+                        value={passcode}
+                        onChange={(e) => setPasscode(e.target.value)}
+                        placeholder="PASSCODE"
+                        autoFocus
+                        className="w-full chassis-inset px-4 py-2.5 text-center text-amber-400 font-mono text-sm tracking-widest focus:outline-none focus:border-amber-500/50"
+                      />
 
-                  {passcodeError && (
-                    <span className="font-mono text-[10px] text-rose-400">
-                      {passcodeError}
-                    </span>
-                  )}
+                      {passcodeError && (
+                        <span className="font-mono text-[10px] text-rose-400">
+                          {passcodeError}
+                        </span>
+                      )}
 
-                  <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={handleCloseModal}
+                          className="py-2 rounded bg-zinc-800 text-zinc-400 hover:text-white font-mono text-xs cursor-pointer"
+                        >
+                          BATAL
+                        </button>
+                        <button
+                          type="submit"
+                          className="py-2 rounded bg-amber-600 hover:bg-amber-500 text-black font-mono font-bold text-xs cursor-pointer"
+                        >
+                          VERIFIKASI
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Forgot password link */}
                     <button
                       type="button"
                       onClick={() => {
-                        setShowPasscodeModal(false);
-                        setPasscode('');
-                        setPasscodeError('');
+                        setShowForgotView(true);
+                        setForgotStatus('idle');
+                        setForgotError('');
                       }}
-                      className="py-2 rounded bg-zinc-800 text-zinc-400 hover:text-white font-mono text-xs cursor-pointer"
+                      className="font-mono text-[10px] text-zinc-500 hover:text-amber-400 transition-colors cursor-pointer underline underline-offset-2"
                     >
-                      BATAL
+                      Lupa kata sandi? Kirim link reset ke email
                     </button>
-                    <button
-                      type="submit"
-                      className="py-2 rounded bg-amber-600 hover:bg-amber-500 text-black font-mono font-bold text-xs cursor-pointer"
-                    >
-                      VERIFIKASI
-                    </button>
-                  </div>
-                </form>
-              </div>
+                  </motion.div>
+                ) : (
+                  /* --- FORGOT PASSWORD VIEW --- */
+                  <motion.div
+                    key="forgot-view"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    className="flex flex-col items-center text-center gap-4"
+                  >
+                    {forgotStatus === 'sent' ? (
+                      /* Success State */
+                      <>
+                        <div className="p-3 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                          <CheckCircle className="w-7 h-7" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+                            EMAIL TERKIRIM
+                          </h3>
+                          <p className="font-mono text-[10px] text-zinc-400 leading-relaxed">
+                            Link reset kata sandi telah dikirim ke:
+                            <span className="block text-amber-400 mt-1">heribangkal21@gmail.com</span>
+                          </p>
+                          <p className="font-mono text-[9px] text-zinc-500 mt-1">
+                            Periksa inbox atau folder spam. Link berlaku 1 jam.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCloseModal}
+                          className="w-full py-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-mono text-xs cursor-pointer transition-colors"
+                        >
+                          TUTUP
+                        </button>
+                      </>
+                    ) : (
+                      /* Send Email State */
+                      <>
+                        <div className="p-2.5 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                          <Mail className="w-6 h-6" />
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                          <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
+                            RESET KATA SANDI
+                          </h3>
+                          <p className="font-mono text-[10px] text-zinc-400 leading-relaxed">
+                            Link reset akan dikirimkan ke email admin:
+                            <span className="block text-amber-400 mt-1">heribangkal21@gmail.com</span>
+                          </p>
+                          <p className="font-mono text-[9px] text-zinc-500 mt-1">
+                            Perubahan kata sandi memerlukan persetujuan melalui email.
+                          </p>
+                        </div>
+
+                        {forgotError && (
+                          <span className="font-mono text-[10px] text-rose-400 text-center">
+                            {forgotError}
+                          </span>
+                        )}
+
+                        <div className="w-full grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowForgotView(false);
+                              setForgotStatus('idle');
+                              setForgotError('');
+                            }}
+                            className="py-2 rounded bg-zinc-800 text-zinc-400 hover:text-white font-mono text-xs cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            KEMBALI
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            disabled={forgotStatus === 'sending'}
+                            className="py-2 rounded bg-sky-700 hover:bg-sky-600 disabled:opacity-60 text-white font-mono font-bold text-xs cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            {forgotStatus === 'sending' ? (
+                              <span className="animate-spin">⚙</span>
+                            ) : (
+                              <Mail className="w-3 h-3" />
+                            )}
+                            {forgotStatus === 'sending' ? 'MENGIRIM...' : 'KIRIM EMAIL'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </div>
         )}

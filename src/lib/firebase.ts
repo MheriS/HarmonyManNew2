@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyABLOkL9cvs5Q_JFRnRldq3FogyRDJHqXA",
@@ -15,6 +16,7 @@ const firebaseConfig = {
 let app;
 let analytics;
 let db: ReturnType<typeof getFirestore> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
 
 try {
     if (getApps().length === 0) {
@@ -26,8 +28,9 @@ try {
         analytics = getAnalytics(app);
     }
     db = getFirestore(app);
+    auth = getAuth(app);
 } catch (e) {
     console.error("Firebase config error:", e);
 }
 
-export { db, analytics };
+export { db, analytics, auth };
