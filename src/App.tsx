@@ -8,9 +8,11 @@ import ProjectsTab from './components/ProjectsTab';
 import ResumeTab from './components/ResumeTab';
 import ContactTab from './components/ContactTab';
 import CosmicBackground from './components/CosmicBackground';
+import { useLanguage } from './i18n/LanguageContext';
 import { MessageSquare, Mail, X, Send, Check, MessageCircle, AlertCircle, Radio } from 'lucide-react';
 
 export default function App() {
+  const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const tabContentRef = useRef<HTMLDivElement>(null);
 
@@ -40,10 +42,13 @@ export default function App() {
   // Scroll to tab content area on mobile whenever activeTab changes
   useEffect(() => {
     if (tabContentRef.current) {
-      const isMobile = window.innerWidth < 1024; // lg breakpoint
+      const isMobile = window.innerWidth < 1024;
       if (isMobile) {
-        const yOffset = tabContentRef.current.getBoundingClientRect().top + window.scrollY - 72; // 72px offset for sticky header
+        const yOffset = tabContentRef.current.getBoundingClientRect().top + window.scrollY - 72;
         window.scrollTo({ top: yOffset, behavior: 'smooth' });
+      } else {
+        // On desktop, scroll the main area to top smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [activeTab]);
@@ -51,7 +56,7 @@ export default function App() {
   const handleFloatingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!floatingForm.name.trim() || !floatingForm.email.trim() || !floatingForm.message.trim()) {
-      setFloatingError('Mohon isi semua kolom bertanda *');
+      setFloatingError(t.transceiver.validationError);
       return;
     }
 
@@ -86,7 +91,7 @@ export default function App() {
           access_key: clientKey,
           name: floatingForm.name,
           email: floatingForm.email,
-          subject: 'Pesan Transceiver Cepat',
+          subject: t.transceiver.subjectPrefix,
           message: floatingForm.message,
           from_name: 'MHS Pocket Transceiver'
         })
@@ -94,7 +99,7 @@ export default function App() {
         if (res.success) finalizeSuccess();
         else { setFloatingError(res.message); setIsFloatingSubmitting(false); }
       }).catch(() => {
-        setFloatingError('Gagal mengirim transmisi.');
+        setFloatingError(t.transceiver.sendError);
         setIsFloatingSubmitting(false);
       });
     } else if (hasWeb3Key) {
@@ -104,14 +109,14 @@ export default function App() {
         body: JSON.stringify({
           name: floatingForm.name,
           email: floatingForm.email,
-          subject: 'Pesan Transceiver Cepat',
+          subject: t.transceiver.subjectPrefix,
           message: floatingForm.message
         })
       }).then(r => r.json()).then(res => {
         if (res.success) finalizeSuccess();
         else { setFloatingError(res.message); setIsFloatingSubmitting(false); }
       }).catch(() => {
-        setFloatingError('Server error.');
+        setFloatingError(t.transceiver.sendError);
         setIsFloatingSubmitting(false);
       });
     } else {
@@ -139,35 +144,62 @@ export default function App() {
       {/* Precision Engineering Telemetry Background */}
       <CosmicBackground />
 
-      {/* Top Rack Mount Header */}
-      <header className="sticky top-0 z-40 bg-[#0e1015]/95 backdrop-blur-md border-b border-white/[0.1] w-full shadow-lg">
+      {/* Top Rack Mount Header — entry-animate for boot feel */}
+      <header className="sticky top-0 z-40 bg-[#0e1015]/95 backdrop-blur-md border-b border-white/[0.1] w-full shadow-lg entry-animate">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           {/* Hardware Identity Stamp */}
           <div className="flex items-center gap-3">
-            <button
+            <motion.button
               type="button"
               onClick={() => setActiveTab('overview')}
+              whileTap={{ scale: 0.93 }}
               className="hardware-key w-9 h-9 rounded bg-[#1e222d] border border-white/20 flex items-center justify-center cursor-pointer text-amber-400 font-mono font-bold text-sm"
-              title="Unit Home"
+              title={t.header.homeTitle}
             >
               H
-            </button>
+            </motion.button>
             <div className="flex flex-col">
               <span className="font-mono text-xs font-bold text-white tracking-wider">
-                MHS.INSTRUMENT // ARCHITECTURE v2.6
+                {t.header.brand}
               </span>
               <span className="font-mono text-[9px] text-zinc-500">
-                AI SYSTEMS & FULL-STACK ENGINE
+                {t.header.brandSub}
               </span>
             </div>
           </div>
 
-          {/* Telemetry Status & Fast Channel Ports */}
-          <div className="flex items-center gap-3">
+          {/* Telemetry Status, Language Switcher & Fast Channel Ports */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* LED Status Readout */}
             <div className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded bg-[#07080a] border border-white/[0.08] font-mono text-[10px] text-zinc-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 led-green" />
-              <span>SYS_ONLINE: SIAP DEPLOY</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 led-green led-pulse" />
+              <span>{t.header.status}</span>
+            </div>
+
+            {/* Language Switcher */}
+            <div
+              className="lang-switch"
+              role="group"
+              aria-label={t.lang.ariaLabel}
+            >
+              <button
+                type="button"
+                onClick={() => setLanguage('id')}
+                className={language === 'id' ? 'active' : ''}
+                aria-pressed={language === 'id'}
+                title="Bahasa Indonesia"
+              >
+                {t.lang.id}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={language === 'en' ? 'active' : ''}
+                aria-pressed={language === 'en'}
+                title="English"
+              >
+                {t.lang.en}
+              </button>
             </div>
 
             {/* Quick Channel Keys */}
@@ -177,14 +209,14 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hardware-key p-1.5 rounded bg-[#141822] hover:bg-emerald-950 text-emerald-400 border border-white/10 transition-colors"
-                title="Direct WhatsApp"
+                title={t.header.waTitle}
               >
                 <MessageCircle className="w-3.5 h-3.5" />
               </a>
               <a
                 href="mailto:heribangkal21@gmail.com"
                 className="hardware-key p-1.5 rounded bg-[#141822] hover:bg-amber-950 text-amber-400 border border-white/10 transition-colors"
-                title="Direct Email"
+                title={t.header.emailTitle}
               >
                 <Mail className="w-3.5 h-3.5" />
               </a>
@@ -196,17 +228,19 @@ export default function App() {
       {/* Main Rack Console Layout */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex flex-col lg:flex-row gap-6 items-start self-center flex-1 justify-center relative z-10">
         {/* Unit Spec Sidebar */}
-        <Sidebar />
+        <div className="entry-animate entry-delay-1 w-full lg:w-auto shrink-0">
+          <Sidebar />
+        </div>
 
         {/* Dynamic Channel Bay Panel */}
-        <div ref={tabContentRef} className="flex-1 w-full min-w-0 max-w-4xl relative">
+        <div ref={tabContentRef} className="flex-1 w-full min-w-0 max-w-4xl relative entry-animate entry-delay-2">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
               className="w-full"
             >
               {renderTabContent()}
@@ -223,17 +257,17 @@ export default function App() {
         <AnimatePresence>
           {isFloatingOpen && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.94, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, y: 8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.97 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="w-[290px] sm:w-[330px] chassis-box p-4 border-amber-500/40 shadow-2xl"
             >
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b border-white/[0.08] pb-2 font-mono text-[10px]">
                   <div className="flex items-center gap-1.5 text-zinc-300 font-bold">
                     <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                    <span>TRANSCEIVER // PESAN CEPAT</span>
+                    <span>{t.transceiver.title}</span>
                   </div>
                   <button
                     type="button"
@@ -247,9 +281,9 @@ export default function App() {
                 {floatingSuccess ? (
                   <div className="chassis-inset p-4 flex flex-col items-center justify-center text-center gap-2 font-mono text-xs text-emerald-400">
                     <Check className="w-6 h-6 text-emerald-400" />
-                    <span className="font-bold">[TRANSMISI DITERIMA]</span>
+                    <span className="font-bold">{t.transceiver.successTitle}</span>
                     <p className="text-[10px] text-zinc-400 font-sans">
-                      Terima kasih. Pesan instan telah masuk ke sistem.
+                      {t.transceiver.successMessage}
                     </p>
                   </div>
                 ) : (
@@ -261,10 +295,10 @@ export default function App() {
                     )}
 
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-zinc-500 uppercase">NAMA *</label>
+                      <label className="text-[8px] text-zinc-500 uppercase">{t.transceiver.nameLabel}</label>
                       <input
                         type="text"
-                        placeholder="Nama Anda"
+                        placeholder={t.transceiver.namePlaceholder}
                         required
                         value={floatingForm.name}
                         onChange={e => setFloatingForm(prev => ({ ...prev, name: e.target.value }))}
@@ -273,7 +307,7 @@ export default function App() {
                     </div>
 
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-zinc-500 uppercase">EMAIL *</label>
+                      <label className="text-[8px] text-zinc-500 uppercase">{t.transceiver.emailLabel}</label>
                       <input
                         type="email"
                         placeholder="email@domain.com"
@@ -285,9 +319,9 @@ export default function App() {
                     </div>
 
                     <div className="flex flex-col gap-0.5">
-                      <label className="text-[8px] text-zinc-500 uppercase">PESAN *</label>
+                      <label className="text-[8px] text-zinc-500 uppercase">{t.transceiver.messageLabel}</label>
                       <textarea
-                        placeholder="Ketik pesan cepat..."
+                        placeholder={t.transceiver.messagePlaceholder}
                         required
                         rows={3}
                         value={floatingForm.message}
@@ -302,11 +336,11 @@ export default function App() {
                       className="hardware-key w-full py-2 px-3 rounded bg-amber-600 hover:bg-amber-500 text-black font-mono font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer mt-1"
                     >
                       {isFloatingSubmitting ? (
-                        <span>MENGIRIM...</span>
+                        <span>{t.transceiver.sending}</span>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />
-                          <span>TRANSMIT PING</span>
+                          <span>{t.transceiver.sendButton}</span>
                         </>
                       )}
                     </button>
@@ -318,14 +352,15 @@ export default function App() {
         </AnimatePresence>
 
         {/* Floating Transceiver Key */}
-        <button
+        <motion.button
           type="button"
           onClick={() => setIsFloatingOpen(!isFloatingOpen)}
+          whileTap={{ scale: 0.93 }}
           className="hardware-key p-3.5 rounded-full bg-[#1e222d] border border-amber-500/50 text-amber-400 shadow-[0_10px_25px_rgba(0,0,0,0.8)] cursor-pointer flex items-center justify-center"
-          title="Buka Transceiver Cepat"
+          title={t.transceiver.openTitle}
         >
           {isFloatingOpen ? <X className="w-5 h-5 text-white" /> : <MessageSquare className="w-5 h-5 text-amber-400" />}
-        </button>
+        </motion.button>
       </div>
     </div>
   );
