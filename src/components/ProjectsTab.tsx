@@ -5,21 +5,19 @@ import {
   ExternalLink, 
   Github, 
   Code2, 
-  Sparkles, 
   Heart, 
   MessageSquare, 
   Send, 
-  User,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
-  FileImage,
   Play,
   X,
   Radio,
-  SlidersHorizontal,
-  ArrowUpRight
+  ArrowUpRight,
+  SlidersHorizontal
 } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 import { db } from '../lib/firebase';
 import { 
@@ -59,7 +57,30 @@ const getDbProjectId = (pid: string) => {
   }
 };
 
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.07,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, ease: [0.16, 1, 0.3, 1] } },
+};
+
 export default function ProjectsTab() {
+  const { t, language } = useLanguage();
+
+  // Map EN filter labels to internal filter values
+  const filterMapping: Record<string, string> = {
+    'All': 'Semua',
+    'Semua': 'Semua',
+  };
+
   const [filter, setFilter] = useState<string>('Semua');
   const [userName, setUserName] = useState(() => localStorage.getItem('heri_portfolio_username') || '');
   const [commentDrafts, setCommentDrafts] = useState<{ [key: string]: string }>({});
@@ -70,7 +91,7 @@ export default function ProjectsTab() {
 
   const [likedList, setLikedList] = useState<{ [key: string]: boolean }>(() => {
     const initial: { [key: string]: boolean } = {};
-    const defaultKeys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+    const defaultKeys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
     defaultKeys.forEach(pid => {
       initial[pid] = localStorage.getItem(`liked_${pid}`) === 'true';
     });
@@ -79,7 +100,7 @@ export default function ProjectsTab() {
 
   const [interactions, setInteractions] = useState<{ [key: string]: ProjectInteraction }>(() => {
     const initial: { [key: string]: ProjectInteraction } = {};
-    const defaultKeys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+    const defaultKeys = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
     defaultKeys.forEach(pid => {
       initial[pid] = {
         likes: 0,
@@ -118,7 +139,7 @@ export default function ProjectsTab() {
     if (!db) return;
 
     const unsubscribes: (() => void)[] = [];
-    const projectIds = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+    const projectIds = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
 
     projectIds.forEach(projectId => {
       const dbProjectId = getDbProjectId(projectId);
@@ -346,38 +367,77 @@ export default function ProjectsTab() {
     }));
   };
 
-  const categories = ['Semua', 'AI Project', 'AI & Web Project', 'Web Project', 'Frontend Web Project'];
+  // Use localized categories
+  const localCategories = t.projects.categories;
 
-  const filteredProjects = filter === 'Semua' 
-    ? PROJECTS 
-    : PROJECTS.filter(p => p.type === filter);
+  const filteredProjects = (() => {
+    // Map the currently selected filter to the actual data filter value
+    if (filter === 'Semua' || filter === 'All') {
+      return PROJECTS;
+    }
+    return PROJECTS.filter(p => p.type === filter);
+  })();
+
+  // Get localized project info
+  const getProjectI18n = (pid: string) => {
+    const key = pid as keyof typeof t.projects;
+    const proj = t.projects[key] as { title: string; description: string } | undefined;
+    return proj && 'title' in proj ? proj : null;
+  };
 
   return (
     <div className="flex flex-col gap-6 w-full select-none">
       {/* Rack Header */}
-      <div className="flex items-center justify-between px-1 font-mono text-xs text-zinc-400">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+        className="flex items-center justify-between px-1 font-mono text-xs text-zinc-400"
+      >
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-4 bg-orange-500 rounded-sm" />
-          <span className="font-bold text-white uppercase tracking-wider">RAK MODUL PRODUK & RISET</span>
+          <span className="font-bold text-white uppercase tracking-wider">{t.projects.header}</span>
         </div>
-        <span className="text-[10px] text-zinc-600 font-mono">TOTAL: {PROJECTS.length} MODUL</span>
-      </div>
+        <span className="text-[10px] text-zinc-600 font-mono">{t.projects.total}: {PROJECTS.length} {t.projects.modul}</span>
+      </motion.div>
 
       {/* Hardware Channel Selector (Filter Bar) */}
-      <div className="chassis-box p-2 flex items-center gap-2 overflow-x-auto scrollbar-none">
-        <span className="font-mono text-[9px] text-zinc-500 uppercase px-2 shrink-0">FILTER:</span>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="chassis-box p-2 flex items-center gap-2 overflow-x-auto scrollbar-none"
+      >
+        <span className="font-mono text-[9px] text-zinc-500 uppercase px-2 shrink-0">{t.projects.filterLabel}</span>
         <div className="flex items-center gap-1.5 shrink-0">
-          {categories.map((cat) => {
-            const isSelected = filter === cat;
-            const count = cat === 'Semua'
+          {localCategories.map((cat, idx) => {
+            // Map EN category back to data filter
+            const dataFilter = idx === 0 ? 'Semua' : t.projects.categories[idx];
+            const originalCat = idx === 0 ? 'Semua' : PROJECTS.map(p => p.type).includes(dataFilter) ? dataFilter : cat;
+            const isSelected = filter === originalCat || (idx === 0 && (filter === 'Semua' || filter === 'All'));
+            
+            const count = idx === 0
               ? PROJECTS.length
-              : PROJECTS.filter(p => p.type === cat).length;
+              : PROJECTS.filter(p => {
+                  // EN category strings match original data type strings exactly (e.g., 'AI Project')
+                  const orig = ['AI Project', 'AI & Web Project', 'Web Project', 'Frontend Web Project'][idx - 1];
+                  return p.type === orig;
+                }).length;
+
+            const handleFilter = () => {
+              if (idx === 0) {
+                setFilter('Semua');
+              } else {
+                const orig = ['AI Project', 'AI & Web Project', 'Web Project', 'Frontend Web Project'][idx - 1];
+                setFilter(orig);
+              }
+            };
 
             return (
               <button
                 key={cat}
                 type="button"
-                onClick={() => setFilter(cat)}
+                onClick={handleFilter}
                 className={`hardware-key px-3 py-1.5 rounded font-mono text-xs flex items-center gap-2 cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-[#232734] border border-orange-500/50 text-white font-bold'
@@ -391,292 +451,306 @@ export default function ProjectsTab() {
             );
           })}
         </div>
-      </div>
+      </motion.div>
 
-      {/* Modules Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-        {filteredProjects.map((project, idx) => {
-          const hasMultipleImages = !!(project.images && project.images.length > 0);
-          const activeImageIndex = projectSlideIndices[project.id] || 0;
-          const currentImg = hasMultipleImages 
-            ? project.images![activeImageIndex] 
-            : project.image;
+      {/* Modules Grid — staggered entry */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={filter + language}
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          {filteredProjects.map((project, idx) => {
+            const hasMultipleImages = !!(project.images && project.images.length > 0);
+            const activeImageIndex = projectSlideIndices[project.id] || 0;
+            const currentImg = hasMultipleImages 
+              ? project.images![activeImageIndex] 
+              : project.image;
 
-          const embedData = getEmbedData(project.demo);
-          const projectCode = `MOD-${String(idx + 1).padStart(2, '0')}`;
+            const embedData = getEmbedData(project.demo);
+            const projectCode = `MOD-${String(idx + 1).padStart(2, '0')}`;
+            const i18nProject = getProjectI18n(project.id);
 
-          return (
-            <div
-              key={project.id}
-              className="chassis-box flex flex-col justify-between overflow-hidden group"
-            >
-              {/* Module Header Bar */}
-              <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5 bg-[#101217] font-mono text-[10px]">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 led-amber" />
-                  <span className="text-zinc-300 font-bold">{projectCode} // {project.type}</span>
+            return (
+              <motion.div
+                key={project.id}
+                variants={cardVariant}
+                className="chassis-box module-card flex flex-col justify-between overflow-hidden group"
+              >
+                {/* Module Header Bar */}
+                <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-2.5 bg-[#101217] font-mono text-[10px]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 led-amber led-pulse led-pulse-delay-1" />
+                    <span className="text-zinc-300 font-bold">{projectCode} // {project.type}</span>
+                  </div>
+                  {project.isSuccessful && (
+                    <span className="text-emerald-400 font-mono text-[9px] flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>{t.projects.verified}</span>
+                    </span>
+                  )}
                 </div>
-                {project.isSuccessful && (
-                  <span className="text-emerald-400 font-mono text-[9px] flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                    <span>VERIFIED</span>
-                  </span>
-                )}
-              </div>
 
-              {/* Media Display Deck (CRT Screen) */}
-              <div className="p-3">
-                <div className="crt-screen aspect-video w-full flex items-center justify-center relative select-none">
-                  {playingProjectId === project.id && embedData ? (
-                    <div className="absolute inset-0 w-full h-full bg-black z-30 flex flex-col justify-between">
-                      <iframe
-                        src={embedData.embedUrl}
-                        title={`${project.title} Video Player`}
-                        className="w-full h-full border-0 absolute top-0 left-0"
-                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
-                        allowFullScreen
-                      />
+                {/* Media Display Deck (CRT Screen) with Scanner Line */}
+                <div className="p-3">
+                  <div className="crt-screen aspect-video w-full flex items-center justify-center relative select-none">
+                    {/* Scanner line on project preview */}
+                    <div className="scanner-line scanner-line-delay-2" />
+
+                    {playingProjectId === project.id && embedData ? (
+                      <div className="absolute inset-0 w-full h-full bg-black z-30 flex flex-col justify-between">
+                        <iframe
+                          src={embedData.embedUrl}
+                          title={`${i18nProject?.title ?? project.title} Video Player`}
+                          className="w-full h-full border-0 absolute top-0 left-0"
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
+                          allowFullScreen
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPlayingProjectId(null);
+                          }}
+                          className="absolute top-2 right-2 bg-black/80 hover:bg-rose-600 text-white p-1.5 rounded border border-white/20 z-40 cursor-pointer"
+                          title={t.projects.closePlayer}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : currentImg ? (
+                      <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={currentImg}
+                          alt={`${i18nProject?.title ?? project.title} screenshot`}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover transition-transform duration-350"
+                        />
+
+                        {/* Multi-image transport controls */}
+                        {hasMultipleImages && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => handlePrevSlide(project.id, project.images!.length, e)}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/80 hover:bg-amber-500 hover:text-black text-white rounded border border-white/20 cursor-pointer z-20"
+                              title={t.projects.prevFrame}
+                            >
+                              <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => handleNextSlide(project.id, project.images!.length, e)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/80 hover:bg-amber-500 hover:text-black text-white rounded border border-white/20 cursor-pointer z-20"
+                              title={t.projects.nextFrame}
+                            >
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+
+                            <div className="absolute bottom-2 right-2 bg-black/80 border border-white/20 px-2 py-0.5 rounded font-mono text-[9px] text-zinc-300 z-20">
+                              {t.projects.frame} {activeImageIndex + 1}/{project.images!.length}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 text-zinc-500 font-mono text-[10px]">
+                        <Code2 className="w-6 h-6 text-zinc-600" />
+                        <span>{t.projects.noFeed}</span>
+                      </div>
+                    )}
+
+                    {/* Play Video Trigger Overlay */}
+                    {embedData && playingProjectId !== project.id && (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPlayingProjectId(null);
+                          setPlayingProjectId(project.id);
                         }}
-                        className="absolute top-2 right-2 bg-black/80 hover:bg-rose-600 text-white p-1.5 rounded border border-white/20 z-40 cursor-pointer"
-                        title="Tutup Player"
+                        className="absolute inset-0 bg-black/50 hover:bg-black/70 flex flex-col items-center justify-center gap-2 transition-all z-20 cursor-pointer"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <div className="hardware-key p-3 rounded-full bg-orange-600 text-black flex items-center justify-center">
+                          <Play className="w-5 h-5 fill-current ml-0.5" />
+                        </div>
+                        <span className="font-mono text-[10px] font-bold text-white bg-black/80 px-2 py-0.5 rounded border border-white/20">
+                          {t.projects.playVideo}
+                        </span>
                       </button>
-                    </div>
-                  ) : currentImg ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <img
-                        src={currentImg}
-                        alt={`${project.title} screenshot`}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
-
-                      {/* Multi-image transport controls */}
-                      {hasMultipleImages && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={(e) => handlePrevSlide(project.id, project.images!.length, e)}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/80 hover:bg-amber-500 hover:text-black text-white rounded border border-white/20 cursor-pointer z-20"
-                            title="Sebelumnya"
-                          >
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={(e) => handleNextSlide(project.id, project.images!.length, e)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/80 hover:bg-amber-500 hover:text-black text-white rounded border border-white/20 cursor-pointer z-20"
-                            title="Selanjutnya"
-                          >
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-
-                          <div className="absolute bottom-2 right-2 bg-black/80 border border-white/20 px-2 py-0.5 rounded font-mono text-[9px] text-zinc-300 z-20">
-                            FRAME {activeImageIndex + 1}/{project.images!.length}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-1.5 text-zinc-500 font-mono text-[10px]">
-                      <Code2 className="w-6 h-6 text-zinc-600" />
-                      <span>NO_OPTICAL_FEED</span>
-                    </div>
-                  )}
-
-                  {/* Play Video Trigger Overlay */}
-                  {embedData && playingProjectId !== project.id && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPlayingProjectId(project.id);
-                      }}
-                      className="absolute inset-0 bg-black/50 hover:bg-black/70 flex flex-col items-center justify-center gap-2 transition-all z-20 cursor-pointer"
-                    >
-                      <div className="hardware-key p-3 rounded-full bg-orange-600 text-black flex items-center justify-center">
-                        <Play className="w-5 h-5 fill-current ml-0.5" />
-                      </div>
-                      <span className="font-mono text-[10px] font-bold text-white bg-black/80 px-2 py-0.5 rounded border border-white/20">
-                        PUTAR DEMO VIDEO
-                      </span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Module Description & Specs */}
-              <div className="p-4 flex flex-col justify-between flex-1 gap-4">
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-base font-bold text-white font-display">
-                    {project.title}
-                  </h4>
-                  <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                    {project.description}
-                  </p>
-                </div>
-
-                {/* Tech Instruction Badges */}
-                <div className="flex flex-wrap gap-1.5">
-                  {project.tech.map((t) => (
-                    <span
-                      key={t}
-                      className="font-mono text-[10px] px-2 py-0.5 rounded bg-black/50 border border-white/[0.08] text-zinc-300"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Action Keys (Demo & Repos) */}
-                <div className="border-t border-white/[0.08] pt-3 flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    {embedData ? (
-                      <button
-                        type="button"
-                        onClick={() => setPlayingProjectId(playingProjectId === project.id ? null : project.id)}
-                        className="hardware-key flex-1 py-2 px-3 rounded bg-[#202430] border border-white/10 hover:border-orange-500/50 text-white font-mono text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <Play className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-                        <span>{playingProjectId === project.id ? 'TUTUP PLAYER' : 'PUTAR DEMO'}</span>
-                      </button>
-                    ) : (
-                      <a
-                        href={project.demo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hardware-key flex-1 py-2 px-3 rounded bg-[#202430] border border-white/10 hover:border-orange-500/50 text-white font-mono text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <span>LIHAT DEMO WEB</span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-orange-400" />
-                      </a>
-                    )}
-
-                    {project.github && project.github.length > 0 && project.github[0].url !== '-' && (
-                      <div className="flex items-center gap-1">
-                        {project.github.map((g, gi) => (
-                          <a
-                            key={gi}
-                            href={g.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hardware-key py-2 px-2.5 rounded bg-[#161820] border border-white/10 hover:border-amber-500/40 text-zinc-300 hover:text-white font-mono text-[11px] flex items-center gap-1 cursor-pointer"
-                            title={`Repository ${g.label}`}
-                          >
-                            <Github className="w-3.5 h-3.5" />
-                            <span>{g.label}</span>
-                          </a>
-                        ))}
-                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Telemetry Interaction Deck (Likes & Comments) */}
-                {(() => {
-                  const data = interactions[project.id] || { likes: 0, liked: false, comments: [] };
-                  const isCommentsOpen = openCommentsProjectId === project.id;
+                {/* Module Description & Specs */}
+                <div className="p-4 flex flex-col justify-between flex-1 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <h4 className="text-base font-bold text-white font-display">
+                      {i18nProject?.title ?? project.title}
+                    </h4>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                      {i18nProject?.description ?? project.description}
+                    </p>
+                  </div>
 
-                  return (
-                    <div className="chassis-inset p-2.5 flex flex-col gap-2 font-mono text-[10px]">
-                      <div className="flex items-center justify-between">
-                        {/* Like Button */}
+                  {/* Tech Instruction Badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {project.tech.map((tech) => (
+                      <span
+                        key={tech}
+                        className="font-mono text-[10px] px-2 py-0.5 rounded bg-black/50 border border-white/[0.08] text-zinc-300"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Action Keys (Demo & Repos) */}
+                  <div className="border-t border-white/[0.08] pt-3 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      {embedData ? (
                         <button
                           type="button"
-                          onClick={() => handleToggleLike(project.id)}
-                          className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
-                            data.liked
-                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                              : 'text-zinc-400 hover:text-white'
-                          }`}
+                          onClick={() => setPlayingProjectId(playingProjectId === project.id ? null : project.id)}
+                          className="hardware-key flex-1 py-2 px-3 rounded bg-[#202430] border border-white/10 hover:border-orange-500/50 text-white font-mono text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <Heart className={`w-3.5 h-3.5 ${data.liked ? 'fill-current' : ''}`} />
-                          <span className="num-tabular font-bold">{data.likes} SUKA</span>
+                          <Play className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+                          <span>{playingProjectId === project.id ? t.projects.closePlayer : t.projects.playButton}</span>
                         </button>
-
-                        {/* Comment Toggle */}
-                        <button
-                          type="button"
-                          onClick={() => setOpenCommentsProjectId(isCommentsOpen ? null : project.id)}
-                          className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
-                            isCommentsOpen ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-zinc-400 hover:text-white'
-                          }`}
+                      ) : (
+                        <a
+                          href={project.demo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hardware-key flex-1 py-2 px-3 rounded bg-[#202430] border border-white/10 hover:border-orange-500/50 text-white font-mono text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>LOG: {data.comments.length}</span>
-                        </button>
-                      </div>
+                          <span>{t.projects.demoButton}</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-orange-400" />
+                        </a>
+                      )}
 
-                      {/* Expandable Comments Log */}
-                      <AnimatePresence>
-                        {isCommentsOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="flex flex-col gap-2 pt-2 border-t border-white/[0.06] overflow-hidden"
+                      {project.github && project.github.length > 0 && project.github[0].url !== '-' && (
+                        <div className="flex items-center gap-1">
+                          {project.github.map((g, gi) => (
+                            <a
+                              key={gi}
+                              href={g.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hardware-key py-2 px-2.5 rounded bg-[#161820] border border-white/10 hover:border-amber-500/40 text-zinc-300 hover:text-white font-mono text-[11px] flex items-center gap-1 cursor-pointer"
+                              title={`Repository ${g.label}`}
+                            >
+                              <Github className="w-3.5 h-3.5" />
+                              <span>{g.label}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Telemetry Interaction Deck (Likes & Comments) */}
+                  {(() => {
+                    const data = interactions[project.id] || { likes: 0, liked: false, comments: [] };
+                    const isCommentsOpen = openCommentsProjectId === project.id;
+
+                    return (
+                      <div className="chassis-inset p-2.5 flex flex-col gap-2 font-mono text-[10px]">
+                        <div className="flex items-center justify-between">
+                          {/* Like Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLike(project.id)}
+                            className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
+                              data.liked
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                : 'text-zinc-400 hover:text-white'
+                            }`}
                           >
-                            <input
-                              type="text"
-                              placeholder="NAMA PENGIRIM (OPSIONAL)"
-                              value={userName}
-                              onChange={(e) => {
-                                setUserName(e.target.value);
-                                localStorage.setItem('heri_portfolio_username', e.target.value);
-                              }}
-                              className="w-full bg-[#101217] border border-white/10 rounded px-2 py-1 text-white font-mono text-[10px]"
-                            />
+                            <Heart className={`w-3.5 h-3.5 ${data.liked ? 'fill-current' : ''}`} />
+                            <span className="num-tabular font-bold">{data.likes} {t.projects.likeLabel}</span>
+                          </button>
 
-                            <div className="flex flex-col gap-1.5 max-h-[120px] overflow-y-auto pr-1">
-                              {data.comments.length === 0 ? (
-                                <p className="text-zinc-600 italic py-1 text-center font-mono">Belum ada transmisi log.</p>
-                              ) : (
-                                data.comments.map((c) => (
-                                  <div key={c.id} className="p-1.5 rounded bg-[#101217] border border-white/5 flex flex-col gap-0.5">
-                                    <div className="flex justify-between items-center text-[9px]">
-                                      <span className="font-bold text-amber-400">{c.senderName}</span>
-                                      <span className="text-zinc-600">{c.createdAt}</span>
-                                    </div>
-                                    <p className="text-zinc-300 font-sans text-[10.5px]">{c.text}</p>
-                                  </div>
-                                ))
-                              )}
-                            </div>
+                          {/* Comment Toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setOpenCommentsProjectId(isCommentsOpen ? null : project.id)}
+                            className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
+                              isCommentsOpen ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'text-zinc-400 hover:text-white'
+                            }`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>{t.projects.logLabel}: {data.comments.length}</span>
+                          </button>
+                        </div>
 
-                            <form onSubmit={(e) => handlePostComment(project.id, e)} className="flex gap-1.5">
+                        {/* Expandable Comments Log */}
+                        <AnimatePresence>
+                          {isCommentsOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                              className="flex flex-col gap-2 pt-2 border-t border-white/[0.06] overflow-hidden"
+                            >
                               <input
                                 type="text"
-                                placeholder="Tulis komentar transmisi..."
-                                required
-                                value={commentDrafts[project.id] || ''}
-                                onChange={(e) => setCommentDrafts(prev => ({ ...prev, [project.id]: e.target.value }))}
-                                className="flex-1 bg-[#101217] border border-white/10 rounded px-2 py-1 text-white font-sans text-xs focus:outline-none focus:border-amber-500/50"
+                                placeholder={t.projects.namePlaceholder}
+                                value={userName}
+                                onChange={(e) => {
+                                  setUserName(e.target.value);
+                                  localStorage.setItem('heri_portfolio_username', e.target.value);
+                                }}
+                                className="w-full bg-[#101217] border border-white/10 rounded px-2 py-1 text-white font-mono text-[10px]"
                               />
-                              <button
-                                type="submit"
-                                className="hardware-key px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-black rounded font-mono font-bold text-xs cursor-pointer"
-                              >
-                                KIRIM
-                              </button>
-                            </form>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+
+                              <div className="flex flex-col gap-1.5 max-h-[120px] overflow-y-auto pr-1">
+                                {data.comments.length === 0 ? (
+                                  <p className="text-zinc-600 italic py-1 text-center font-mono">{t.projects.noComments}</p>
+                                ) : (
+                                  data.comments.map((c) => (
+                                    <div key={c.id} className="p-1.5 rounded bg-[#101217] border border-white/5 flex flex-col gap-0.5">
+                                      <div className="flex justify-between items-center text-[9px]">
+                                        <span className="font-bold text-amber-400">{c.senderName}</span>
+                                        <span className="text-zinc-600">{c.createdAt}</span>
+                                      </div>
+                                      <p className="text-zinc-300 font-sans text-[10.5px]">{c.text}</p>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+
+                              <form onSubmit={(e) => handlePostComment(project.id, e)} className="flex gap-1.5">
+                                <input
+                                  type="text"
+                                  placeholder={t.projects.commentPlaceholder}
+                                  required
+                                  value={commentDrafts[project.id] || ''}
+                                  onChange={(e) => setCommentDrafts(prev => ({ ...prev, [project.id]: e.target.value }))}
+                                  className="flex-1 bg-[#101217] border border-white/10 rounded px-2 py-1 text-white font-sans text-xs focus:outline-none focus:border-amber-500/50"
+                                />
+                                <button
+                                  type="submit"
+                                  className="hardware-key px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-black rounded font-mono font-bold text-xs cursor-pointer"
+                                >
+                                  {t.projects.sendButton}
+                                </button>
+                              </form>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
