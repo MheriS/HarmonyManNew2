@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Download, Github, Linkedin, Instagram, Camera, ShieldCheck, Terminal, Radio, Mail, RotateCcw, CheckCircle } from 'lucide-react';
+import { MapPin, Download, Github, Linkedin, Instagram, Camera, ShieldCheck, Mail, RotateCcw, CheckCircle } from 'lucide-react';
 import { PERSONAL_INFO } from '../data';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function Sidebar() {
+  const { t } = useLanguage();
   const [avatar, setAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPasscodeModal, setShowPasscodeModal] = useState(false);
@@ -67,7 +69,7 @@ export default function Sidebar() {
           setDbState('connected');
         } catch (error: any) {
           setDbState('error');
-          setCloudError(error.message || 'Izin database terbatas');
+          setCloudError(error.message || 'Cloud DB permission limited');
         }
       } else {
         setDbState('no-db');
@@ -106,7 +108,7 @@ export default function Sidebar() {
         fileInputRef.current?.click();
       }, 100);
     } else {
-      setPasscodeError('Kunci otentikasi salah.');
+      setPasscodeError(t.modal.wrongPasscode);
       setPasscode('');
     }
   };
@@ -121,14 +123,14 @@ export default function Sidebar() {
 
     if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
       setForgotStatus('error');
-      setForgotError('EmailJS belum dikonfigurasi. Lihat panduan setup di konsol.');
+      setForgotError(t.modal.emailConfigError);
       console.warn(
-        '[FORGOT PASSWORD] EmailJS belum dikonfigurasi.\n' +
-        'Tambahkan ke file .env:\n' +
+        '[FORGOT PASSWORD] EmailJS not configured.\n' +
+        'Add to .env:\n' +
         '  VITE_EMAILJS_SERVICE_ID=service_xxxxxxx\n' +
         '  VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx\n' +
         '  VITE_EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxx\n' +
-        'Daftar gratis di https://www.emailjs.com'
+        'Register free at https://www.emailjs.com'
       );
       return;
     }
@@ -141,11 +143,11 @@ export default function Sidebar() {
           to_email:   'heribangkal21@gmail.com',
           to_name:    'Heri Admin',
           from_name:  'MHS Portfolio System',
-          subject:    'Reset Passcode Admin — Permintaan Baru',
+          subject:    'Reset Admin Passcode — New Request',
           message:
-            'Seseorang (kemungkinan kamu sendiri) baru saja meminta reset passcode admin di portfolio kamu.\n\n' +
-            'Untuk mengubah passcode, update variabel VITE_ADMIN_PASSCODE di file .env atau di panel deployment kamu.\n\n' +
-            'Jika bukan kamu yang meminta, abaikan email ini.',
+            'Someone (likely yourself) just requested an admin passcode reset on your portfolio.\n\n' +
+            'To change the passcode, update the VITE_ADMIN_PASSCODE variable in your .env or deployment panel.\n\n' +
+            'If this was not you, please ignore this email.',
           time: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
         },
         PUBLIC_KEY
@@ -153,7 +155,7 @@ export default function Sidebar() {
       setForgotStatus('sent');
     } catch (err: any) {
       setForgotStatus('error');
-      setForgotError('Gagal mengirim email. Periksa konfigurasi EmailJS.');
+      setForgotError(t.modal.emailSendError);
       console.error('[EmailJS error]', err);
     }
   };
@@ -264,11 +266,11 @@ export default function Sidebar() {
         {/* Header Unit Stamp */}
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 px-1">
           <div className="flex items-center gap-1.5 font-mono text-[10px] text-zinc-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 led-green" />
-            <span className="font-bold text-zinc-300">UNIT_MHS // MOD-01</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 led-green led-pulse" />
+            <span className="font-bold text-zinc-300">{t.sidebar.unitStamp}</span>
           </div>
           <span className="font-mono text-[9px] text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
-            SYS_ONLINE
+            {t.sidebar.systemOnline}
           </span>
         </div>
 
@@ -276,10 +278,10 @@ export default function Sidebar() {
         <div className="w-full flex flex-col items-center">
           <div className="chassis-inset p-2.5 w-full max-w-[240px] flex flex-col items-center relative">
             {/* Viewfinder Target Crosshairs */}
-            <span className="absolute top-1.5 left-1.5 font-mono text-[10px] text-zinc-600">┌</span>
-            <span className="absolute top-1.5 right-1.5 font-mono text-[10px] text-zinc-600">┐</span>
-            <span className="absolute bottom-1.5 left-1.5 font-mono text-[10px] text-zinc-600">└</span>
-            <span className="absolute bottom-1.5 right-1.5 font-mono text-[10px] text-zinc-600">┘</span>
+            <span className="absolute top-1.5 left-1.5 font-mono text-[10px] text-zinc-600">{t.sidebar.viewfinderCorners[0]}</span>
+            <span className="absolute top-1.5 right-1.5 font-mono text-[10px] text-zinc-600">{t.sidebar.viewfinderCorners[1]}</span>
+            <span className="absolute bottom-1.5 left-1.5 font-mono text-[10px] text-zinc-600">{t.sidebar.viewfinderCorners[2]}</span>
+            <span className="absolute bottom-1.5 right-1.5 font-mono text-[10px] text-zinc-600">{t.sidebar.viewfinderCorners[3]}</span>
 
             <div
               onClick={handleImageClick}
@@ -295,20 +297,20 @@ export default function Sidebar() {
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 font-mono text-zinc-600 text-xs">
                   <Camera className="w-8 h-8 mb-1 text-zinc-600" />
-                  <span>BIOMETRIC RAW</span>
+                  <span>{t.sidebar.biometricRaw}</span>
                 </div>
               )}
 
               {/* Upload Hover State */}
               <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 text-white font-mono text-[10px]">
                 <Camera className="w-5 h-5 text-amber-400" />
-                <span>GANTI FOTO</span>
+                <span>{t.sidebar.changePhoto}</span>
               </div>
 
               {isUploading && (
                 <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center font-mono text-[10px] text-amber-400">
                   <span className="animate-spin mb-1">⚙</span>
-                  <span>SYNC CLOUD...</span>
+                  <span>{t.sidebar.syncCloud}</span>
                 </div>
               )}
 
@@ -323,8 +325,8 @@ export default function Sidebar() {
 
             {/* Viewfinder Telemetry Readout */}
             <div className="w-full flex items-center justify-between text-[8px] font-mono text-zinc-500 mt-1.5 px-0.5">
-              <span>CCD_360PX</span>
-              <span>CALIBRATED</span>
+              <span>{t.sidebar.ccdSpec}</span>
+              <span>{t.sidebar.calibrated}</span>
             </div>
           </div>
 
@@ -339,26 +341,29 @@ export default function Sidebar() {
 
             <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded border border-white/[0.08] bg-black/40 font-mono text-[10px] text-zinc-400">
               <MapPin className="w-3 h-3 text-orange-400" />
-              <span>{PERSONAL_INFO.location} // GMT+7</span>
+              <span>{PERSONAL_INFO.location} // {t.sidebar.location}</span>
             </div>
           </div>
         </div>
 
         {/* Telemetry Meters (Stats Gauge) */}
         <div className="chassis-inset p-3 grid grid-cols-3 gap-2 text-center">
-          {PERSONAL_INFO.stats.map((st, i) => (
-            <div key={i} className="flex flex-col items-center justify-center">
-              <span className="text-lg font-bold font-mono text-amber-400 num-tabular">
-                {st.value}
-              </span>
-              <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
-                {st.label}
-              </span>
-              <div className="w-full bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden flex">
-                <div className="bg-amber-400 h-full w-4/5" />
+          {PERSONAL_INFO.stats.map((st, i) => {
+            const statLabels = [t.personal.stats.year, t.personal.stats.project, t.personal.stats.cert];
+            return (
+              <div key={i} className="flex flex-col items-center justify-center">
+                <span className="text-lg font-bold font-mono text-amber-400 num-tabular">
+                  {st.value}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
+                  {statLabels[i]}
+                </span>
+                <div className="w-full bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden flex">
+                  <div className="bg-amber-400 h-full w-4/5" />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Tactile Hardware Push Switch (Download CV) */}
@@ -371,7 +376,7 @@ export default function Sidebar() {
         >
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-orange-500 led-orange" />
-            <span className="tracking-wide text-zinc-100">UNDUH DOKUMEN CV</span>
+            <span className="tracking-wide text-zinc-100">{t.sidebar.downloadCV}</span>
           </div>
           <Download className="w-4 h-4 text-orange-400" />
         </motion.a>
@@ -383,14 +388,14 @@ export default function Sidebar() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <span className="text-emerald-400/90 font-medium tracking-tight">
-            STATUS: SIAP PROYEK & KONTRAK
+            {t.sidebar.statusReady}
           </span>
         </div>
 
         {/* Connectivity Ports (Socials) */}
         <div className="border-t border-white/[0.08] pt-3 flex flex-col gap-2">
           <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider px-1">
-            PORT KOMUNIKASI EKSTERNAL:
+            {t.sidebar.externalPorts}
           </span>
           <div className="grid grid-cols-3 gap-2">
             <motion.a
@@ -434,7 +439,7 @@ export default function Sidebar() {
         {/* Cloud Error Display */}
         {dbState === 'error' && (
           <div className="chassis-inset p-2.5 font-mono text-[9px] text-rose-400 leading-normal border border-rose-900/40">
-            [SYS_WARN] Izin cloud database terbatas. Foto aktif di cache lokal.
+            {t.sidebar.cloudError}
           </div>
         )}
       </aside>
@@ -447,6 +452,7 @@ export default function Sidebar() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.18 }}
               className="w-full max-w-sm chassis-box p-6 border-amber-500/30"
             >
               <AnimatePresence mode="wait">
@@ -457,6 +463,7 @@ export default function Sidebar() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.15 }}
                     className="flex flex-col items-center text-center gap-3"
                   >
                     <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -465,10 +472,10 @@ export default function Sidebar() {
 
                     <div className="flex flex-col gap-1">
                       <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
-                        OTENTIKASI AKSES ADMIN
+                        {t.modal.authTitle}
                       </h3>
                       <p className="font-mono text-[10px] text-zinc-400">
-                        Masukkan passcode pemilik unit untuk mengunggah foto profil.
+                        {t.modal.authDesc}
                       </p>
                     </div>
 
@@ -477,7 +484,7 @@ export default function Sidebar() {
                         type="password"
                         value={passcode}
                         onChange={(e) => setPasscode(e.target.value)}
-                        placeholder="PASSCODE"
+                        placeholder={t.modal.passcodePlaceholder}
                         autoFocus
                         className="w-full chassis-inset px-4 py-2.5 text-center text-amber-400 font-mono text-sm tracking-widest focus:outline-none focus:border-amber-500/50"
                       />
@@ -494,13 +501,13 @@ export default function Sidebar() {
                           onClick={handleCloseModal}
                           className="py-2 rounded bg-zinc-800 text-zinc-400 hover:text-white font-mono text-xs cursor-pointer"
                         >
-                          BATAL
+                          {t.modal.cancel}
                         </button>
                         <button
                           type="submit"
                           className="py-2 rounded bg-amber-600 hover:bg-amber-500 text-black font-mono font-bold text-xs cursor-pointer"
                         >
-                          VERIFIKASI
+                          {t.modal.verify}
                         </button>
                       </div>
                     </form>
@@ -515,7 +522,7 @@ export default function Sidebar() {
                       }}
                       className="font-mono text-[10px] text-zinc-500 hover:text-amber-400 transition-colors cursor-pointer underline underline-offset-2"
                     >
-                      Lupa kata sandi? Kirim link reset ke email
+                      {t.modal.forgotPassword}
                     </button>
                   </motion.div>
                 ) : (
@@ -525,6 +532,7 @@ export default function Sidebar() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
+                    transition={{ duration: 0.15 }}
                     className="flex flex-col items-center text-center gap-4"
                   >
                     {forgotStatus === 'sent' ? (
@@ -535,14 +543,14 @@ export default function Sidebar() {
                         </div>
                         <div className="flex flex-col gap-1.5">
                           <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
-                            EMAIL TERKIRIM
+                            {t.modal.emailSentTitle}
                           </h3>
                           <p className="font-mono text-[10px] text-zinc-400 leading-relaxed">
-                            Link reset kata sandi telah dikirim ke:
+                            {t.modal.emailSentDesc}
                             <span className="block text-amber-400 mt-1">heribangkal21@gmail.com</span>
                           </p>
                           <p className="font-mono text-[9px] text-zinc-500 mt-1">
-                            Periksa inbox atau folder spam. Link berlaku 1 jam.
+                            {t.modal.emailSentNote}
                           </p>
                         </div>
                         <button
@@ -550,7 +558,7 @@ export default function Sidebar() {
                           onClick={handleCloseModal}
                           className="w-full py-2 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-mono text-xs cursor-pointer transition-colors"
                         >
-                          TUTUP
+                          {t.modal.close}
                         </button>
                       </>
                     ) : (
@@ -562,14 +570,14 @@ export default function Sidebar() {
 
                         <div className="flex flex-col gap-1">
                           <h3 className="font-mono text-sm font-bold text-white uppercase tracking-wider">
-                            RESET KATA SANDI
+                            {t.modal.resetTitle}
                           </h3>
                           <p className="font-mono text-[10px] text-zinc-400 leading-relaxed">
-                            Link reset akan dikirimkan ke email admin:
+                            {t.modal.resetDesc}
                             <span className="block text-amber-400 mt-1">heribangkal21@gmail.com</span>
                           </p>
                           <p className="font-mono text-[9px] text-zinc-500 mt-1">
-                            Perubahan kata sandi memerlukan persetujuan melalui email.
+                            {t.modal.resetNote}
                           </p>
                         </div>
 
@@ -590,7 +598,7 @@ export default function Sidebar() {
                             className="py-2 rounded bg-zinc-800 text-zinc-400 hover:text-white font-mono text-xs cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
                           >
                             <RotateCcw className="w-3 h-3" />
-                            KEMBALI
+                            {t.modal.back}
                           </button>
                           <button
                             type="button"
@@ -603,7 +611,7 @@ export default function Sidebar() {
                             ) : (
                               <Mail className="w-3 h-3" />
                             )}
-                            {forgotStatus === 'sending' ? 'MENGIRIM...' : 'KIRIM EMAIL'}
+                            {forgotStatus === 'sending' ? t.modal.sending : t.modal.sendEmail}
                           </button>
                         </div>
                       </>
