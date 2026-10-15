@@ -246,6 +246,7 @@ export const EXPERIENCES: ExperienceItem[] = [
 
 export const certifications: Certification[] = [
   {
+    id: "cert-ai-milenial-2025",
     name: "AI Engineer For Milenial",
     issuer: "Pusat Pengembangan Literasi Digital",
     date: "12 September 2025",
@@ -259,6 +260,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-azure-prompt-2025",
     name: "Menerapkan rekayasa prompt dengan Azure OpenAI Service",
     issuer: "DTS Kominfo & ElevAlte",
     date: "9 September 2025",
@@ -272,6 +274,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-linear-ml-2025",
     name: "Linear Models in Machine Learning: Fundamentals",
     issuer: "DTS Kominfo & Yandex (Fresh Graduate Academy)",
     date: "20 Mei 2025",
@@ -291,6 +294,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-intro-datascience-2025",
     name: "Pengenalan Data Science dan Pemanfaatannya di Berbagai Sektor",
     issuer: "DTS Kominfo",
     date: "14 Mei 2025",
@@ -304,6 +308,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-career-data-analytics-2025",
     name: "Wawasan Karir dalam Bidang Data Analytics",
     issuer: "DTS Kominfo",
     date: "14 Mei 2025",
@@ -317,6 +322,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-ai-security-2025",
     name: "Dasar-dasar Keamanan AI",
     issuer: "DTS Kominfo & ElevAlte",
     date: "10 Mei 2025",
@@ -330,6 +336,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-pdp-privacy-2025",
     name: "Seberapa Penting Menjaga Data Pribadi dan Pelindungannya",
     issuer: "DTS Kominfo",
     date: "7 Mei 2025",
@@ -343,6 +350,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-ai-implementation-2025",
     name: "Dasar-Dasar Implementasi Kecerdasan Artifisial",
     issuer: "DTS Kominfo",
     date: "7 Mei 2025",
@@ -358,6 +366,7 @@ export const certifications: Certification[] = [
     verifyUrl: "https://digitalent.komdigi.go.id/cek-sertifikat#"
   },
   {
+    id: "cert-alibaba-bigdata-2023",
     name: "Alibaba Cloud: Big Data Fundamentals",
     issuer: "DTS Kominfo (Pusbang Proserti) & Alibaba Cloud",
     date: "27 Desember 2023",
@@ -377,6 +386,7 @@ export const certifications: Certification[] = [
 
 export const education: Education[] = [
   {
+    id: "edu-uin-malang-s1",
     degree: "S1 - Teknik Informatika",
     school: "UIN Maulana Malik Ibrahim Malang",
     location: "Malang, Indonesia",
