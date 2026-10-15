@@ -1916,7 +1916,7 @@ export default function ResumeTab() {
                           {achievements.map((pt, i) => (
                             <li key={i} className="text-xs text-zinc-400 flex items-start gap-1.5 font-sans leading-relaxed">
                               <ChevronRight className="w-3.5 h-3.5 text-amber-400/60 shrink-0 mt-0.5" />
-                              <span>{renderAchievementContent(pt)}</span>
+                              <span>{renderAchievementContent(pt, language === 'en')}</span>
                             </li>
                           ))}
                         </ul>
