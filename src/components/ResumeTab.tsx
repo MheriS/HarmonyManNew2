@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  EXPERIENCES as defaultExperiences, 
-  certifications as defaultCertifications, 
-  PUBLICATIONS as defaultPublications, 
-  education as defaultEducation 
+import {
+  EXPERIENCES as defaultExperiences,
+  certifications as defaultCertifications,
+  PUBLICATIONS as defaultPublications,
+  education as defaultEducation
 } from '../data';
-import { 
-  GraduationCap, 
-  Briefcase, 
-  Award, 
-  BookOpen, 
-  ChevronRight, 
-  ArrowUpRight, 
-  Plus, 
-  Pencil, 
-  Trash2, 
-  RotateCcw, 
-  FileText, 
-  X, 
-  Check, 
-  Upload, 
-  Search, 
-  FileCheck, 
+import {
+  GraduationCap,
+  Briefcase,
+  Award,
+  BookOpen,
+  ChevronRight,
+  ArrowUpRight,
+  Plus,
+  Pencil,
+  Trash2,
+  RotateCcw,
+  FileText,
+  X,
+  Check,
+  Upload,
+  Search,
+  FileCheck,
   ExternalLink,
   AlertTriangle,
   Lock,
@@ -173,7 +173,7 @@ const renderAchievementContent = (pt: string | React.ReactNode, isEn: boolean = 
         </span>
       );
     }
-    
+
     // Markdown link regex: [text](url)
     const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
     if (linkRegex.test(pt)) {
@@ -253,7 +253,7 @@ export default function ResumeTab() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (_) {}
+    } catch (_) { }
     return defaultEducation;
   });
 
@@ -265,7 +265,7 @@ export default function ResumeTab() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (_) {}
+    } catch (_) { }
     return defaultExperiences.filter(exp => exp.type === 'work');
   });
 
@@ -277,7 +277,7 @@ export default function ResumeTab() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (_) {}
+    } catch (_) { }
     return defaultCertifications;
   });
 
@@ -289,7 +289,7 @@ export default function ResumeTab() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (_) {}
+    } catch (_) { }
     return defaultPublications;
   });
 
@@ -307,7 +307,7 @@ export default function ResumeTab() {
   } | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'edu' | 'work' | 'cert' | 'pub'; id: string; name: string } | null>(null);
-  
+
   // Lightbox / Multi-Photo Inspector Modal state
   const [previewGallery, setPreviewGallery] = useState<{
     title: string;
@@ -562,7 +562,7 @@ export default function ResumeTab() {
       setIsAdminVerified(true);
       try {
         sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
-      } catch (_) {}
+      } catch (_) { }
       setShowAuthModal(false);
       setPasscodeInput('');
       setPasscodeError('');
@@ -583,7 +583,7 @@ export default function ResumeTab() {
     setIsAdminVerified(false);
     try {
       sessionStorage.removeItem(AUTH_SESSION_KEY);
-    } catch (_) {}
+    } catch (_) { }
     setToastMessage(t.resume.adminLocked);
   };
 
@@ -593,15 +593,15 @@ export default function ResumeTab() {
     try {
       const serializable = newList.map(item => ({
         ...item,
-        achievements: item.achievements.map(a => 
+        achievements: item.achievements.map(a =>
           typeof a === 'string' ? a : "Menerbitkan jurnal ilmiah tentang 'Klasifikasi Penyakit Padi Menggunakan Convolutional Neural Network (CNN) Berbasis Citra Daun' di 'JNTETI UGM'"
         )
       }));
       localStorage.setItem(STORAGE_KEY_EDU, JSON.stringify(serializable));
       if (db) {
-        setDoc(doc(db, 'portfolio_projects', 'education_data'), { items: serializable, updatedAt: new Date().toISOString() }).catch(() => {});
+        setDoc(doc(db, 'portfolio_projects', 'education_data'), { items: serializable, updatedAt: new Date().toISOString() }).catch(() => { });
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Persist Work Experiences (Track 02)
@@ -610,9 +610,9 @@ export default function ResumeTab() {
     try {
       localStorage.setItem(STORAGE_KEY_WORK, JSON.stringify(newList));
       if (db) {
-        setDoc(doc(db, 'portfolio_projects', 'work_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => {});
+        setDoc(doc(db, 'portfolio_projects', 'work_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => { });
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Persist Certifications
@@ -621,9 +621,9 @@ export default function ResumeTab() {
     try {
       localStorage.setItem(STORAGE_KEY_CERTS, JSON.stringify(newList));
       if (db) {
-        setDoc(doc(db, 'portfolio_projects', 'certifications_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => {});
+        setDoc(doc(db, 'portfolio_projects', 'certifications_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => { });
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Persist Publications
@@ -632,9 +632,9 @@ export default function ResumeTab() {
     try {
       localStorage.setItem(STORAGE_KEY_PUBS, JSON.stringify(newList));
       if (db) {
-        setDoc(doc(db, 'portfolio_projects', 'publications_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => {});
+        setDoc(doc(db, 'portfolio_projects', 'publications_data'), { items: newList, updatedAt: new Date().toISOString() }).catch(() => { });
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Open Education Editor
@@ -668,8 +668,8 @@ export default function ResumeTab() {
       setEduFieldOfStudy(item.fieldOfStudy || '');
       setEduStatus(item.status || 'completed');
       setEduDescription(item.description || '');
-      
-      const textLines = item.achievements.map(a => 
+
+      const textLines = item.achievements.map(a =>
         typeof a === 'string' ? a : "Menerbitkan jurnal ilmiah tentang 'Klasifikasi Penyakit Padi Menggunakan Convolutional Neural Network (CNN) Berbasis Citra Daun' di 'JNTETI UGM'"
       ).join('\n');
       setEduAchievementsText(textLines);
@@ -1079,7 +1079,7 @@ export default function ResumeTab() {
     const query = certSearch.toLowerCase().trim();
     if (!query) return matchesCategory;
 
-    const matchesQuery = 
+    const matchesQuery =
       certName.toLowerCase().includes(query) ||
       certIssuer.toLowerCase().includes(query) ||
       (cert.credentialId && cert.credentialId.toLowerCase().includes(query)) ||
@@ -1134,7 +1134,7 @@ export default function ResumeTab() {
             </div>
           ) : (
             <button
-              onClick={() => requireAdminAuth(() => {})}
+              onClick={() => requireAdminAuth(() => { })}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900/80 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/40 text-zinc-400 hover:text-amber-400 text-[10px] font-mono transition-all"
               title={t.resume.adminUnlockBtn}
             >
@@ -1159,11 +1159,10 @@ export default function ResumeTab() {
       <motion.div variants={fadeUp} className="chassis-inset p-1.5 flex items-center gap-1 overflow-x-auto custom-scrollbar font-mono text-[11px]">
         <button
           onClick={() => setActiveSection('all')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${
-            activeSection === 'all'
-              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-300'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${activeSection === 'all'
+            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
         >
           <Layers className="w-3.5 h-3.5" />
           <span>{t.resume.sectionAll}</span>
@@ -1171,11 +1170,10 @@ export default function ResumeTab() {
 
         <button
           onClick={() => setActiveSection('edu')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${
-            activeSection === 'edu'
-              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-300'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${activeSection === 'edu'
+            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
         >
           <GraduationCap className="w-3.5 h-3.5" />
           <span>{t.resume.sectionEdu} ({educationList.length})</span>
@@ -1183,11 +1181,10 @@ export default function ResumeTab() {
 
         <button
           onClick={() => setActiveSection('work')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${
-            activeSection === 'work'
-              ? 'bg-orange-500/20 text-orange-300 border border-orange-500/50 shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-300'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${activeSection === 'work'
+            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/50 shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
         >
           <Briefcase className="w-3.5 h-3.5" />
           <span>{t.resume.sectionWork} ({workList.length})</span>
@@ -1195,11 +1192,10 @@ export default function ResumeTab() {
 
         <button
           onClick={() => setActiveSection('certs')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${
-            activeSection === 'certs'
-              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-300'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${activeSection === 'certs'
+            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
         >
           <Award className="w-3.5 h-3.5" />
           <span>{t.resume.sectionCerts} ({certificationsList.length})</span>
@@ -1207,11 +1203,10 @@ export default function ResumeTab() {
 
         <button
           onClick={() => setActiveSection('pubs')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${
-            activeSection === 'pubs'
-              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-300'
-          }`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all uppercase font-bold ${activeSection === 'pubs'
+            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+            : 'text-zinc-500 hover:text-zinc-300'
+            }`}
         >
           <BookOpen className="w-3.5 h-3.5" />
           <span>{t.resume.sectionPubs} ({publicationsList.length})</span>
@@ -1255,22 +1250,20 @@ export default function ResumeTab() {
               <button
                 type="button"
                 onClick={() => setActiveEditor(prev => prev ? ({ ...prev, tab: 'info' }) : null)}
-                className={`px-4 py-2 border-b-2 font-bold transition-all ${
-                  activeEditor.tab === 'info'
-                    ? 'border-amber-500 text-amber-400 bg-amber-500/10'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                }`}
+                className={`px-4 py-2 border-b-2 font-bold transition-all ${activeEditor.tab === 'info'
+                  ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  }`}
               >
                 {t.resume.tabBasicInfo}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveEditor(prev => prev ? ({ ...prev, tab: 'details' }) : null)}
-                className={`px-4 py-2 border-b-2 font-bold transition-all ${
-                  activeEditor.tab === 'details'
-                    ? 'border-amber-500 text-amber-400 bg-amber-500/10'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
-                }`}
+                className={`px-4 py-2 border-b-2 font-bold transition-all ${activeEditor.tab === 'details'
+                  ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  }`}
               >
                 {t.resume.tabDetailsMedia}
               </button>
@@ -1820,7 +1813,7 @@ export default function ResumeTab() {
       {/* Dual Bus Timelines (Track 01 Education & Track 02 Work) */}
       {(activeSection === 'all' || activeSection === 'edu' || activeSection === 'work') && (
         <motion.div variants={fadeUp} className={`grid gap-5 w-full ${activeSection === 'all' ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-          
+
           {/* TRACK 01: Academic Qualification */}
           {(activeSection === 'all' || activeSection === 'edu') && (
             <div className="chassis-box p-5 flex flex-col gap-4">
@@ -1849,7 +1842,14 @@ export default function ResumeTab() {
                   const photos = getItemPhotos(item);
 
                   // Localized content resolution (Solves bilingual English logbook)
-                  const loc = t.resumeData?.education?.[item.id || ''];
+                  // const loc = t.resumeData?.education?.[item.id || ''];
+                  const educationTranslationKey =
+                    item.id === 'edu-uin-malang-s1' ||
+                      item.degree === 'S1 - Teknik Informatika'
+                      ? 'edu-uin-malang-s1'
+                      : item.id || '';
+
+                  const loc = t.resumeData?.education?.[educationTranslationKey];
                   const degree = loc?.degree || item.degree;
                   const school = loc?.school || item.school;
                   const location = loc?.location || item.location;
@@ -2127,11 +2127,10 @@ export default function ResumeTab() {
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-2 py-0.5 rounded whitespace-nowrap transition-all uppercase ${
-                        selectedCategory === cat
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold'
-                          : 'bg-zinc-900/60 text-zinc-500 hover:text-zinc-300 border border-white/5'
-                      }`}
+                      className={`px-2 py-0.5 rounded whitespace-nowrap transition-all uppercase ${selectedCategory === cat
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold'
+                        : 'bg-zinc-900/60 text-zinc-500 hover:text-zinc-300 border border-white/5'
+                        }`}
                     >
                       {cat === 'all' ? t.resume.filterCategoryAll : cat}
                     </button>
@@ -2539,11 +2538,10 @@ export default function ResumeTab() {
                     <button
                       key={idx}
                       onClick={() => setPreviewGallery(prev => prev ? ({ ...prev, activeIndex: idx }) : null)}
-                      className={`relative rounded overflow-hidden w-12 h-12 border-2 transition-all shrink-0 ${
-                        idx === previewGallery.activeIndex
-                          ? 'border-amber-400 scale-105 shadow-md'
-                          : 'border-white/10 opacity-60 hover:opacity-100'
-                      }`}
+                      className={`relative rounded overflow-hidden w-12 h-12 border-2 transition-all shrink-0 ${idx === previewGallery.activeIndex
+                        ? 'border-amber-400 scale-105 shadow-md'
+                        : 'border-white/10 opacity-60 hover:opacity-100'
+                        }`}
                     >
                       <img src={ph} alt={`nav-thumb-${idx}`} className="w-full h-full object-cover" />
                     </button>
